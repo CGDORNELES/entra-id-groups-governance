@@ -1,6 +1,7 @@
 # Contributing to Entra ID Groups Governance
 
-We welcome contributions to improve this toolkit! This document provides guidelines for contributing.
+We welcome contributions to improve this toolkit! 
+This document provides guidelines for contributing.
 
 ## How to Contribute
 

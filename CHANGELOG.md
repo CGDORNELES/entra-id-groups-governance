@@ -25,23 +25,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication token refresh issues
 - CSV export encoding problems
 
-## [2.0.0] - 2025-01-01
+[//]: # (## [2.0.0] - 2025-01-01)
 
-### Added
-- Privileged groups assessment
-- Role-assignable groups identification
-- Guest user analysis
-- Orphaned groups detection
+[//]: # ()
+[//]: # (### Added)
 
-### Changed
-- Modularized script architecture
-- Improved progress reporting
+[//]: # (- Privileged groups assessment)
 
-## [1.0.0] - 2024-10-15
+[//]: # (- Role-assignable groups identification)
 
-### Added
-- Initial release
-- Basic group inventory assessment
-- Empty groups detection
-- CSV export functionality
-- Summary statistics generation
+[//]: # (- Guest user analysis)
+
+[//]: # (- Orphaned groups detection)
+
+[//]: # ()
+[//]: # (### Changed)
+
+[//]: # (- Modularized script architecture)
+
+[//]: # (- Improved progress reporting)
+
+[//]: # ()
+[//]: # (## [1.0.0] - 2024-10-15)
+
+[//]: # ()
+[//]: # (### Added)
+
+[//]: # (- Initial release)
+
+[//]: # (- Basic group inventory assessment)
+
+[//]: # (- Empty groups detection)
+
+[//]: # (- CSV export functionality)
+
+[//]: # (- Summary statistics generation)
