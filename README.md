@@ -3,8 +3,9 @@
 
 ## Overview
 
-This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID (Azure AD)
-groups, including activity analysis, governance evaluation, and improvement recommendations.
+This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID
+(Azure AD) groups, including activity analysis, governance evaluation, and
+improvement recommendations.
 
 **Author:** Developed for Clairo Dorneles
 **Date:** January 13, 2025  
