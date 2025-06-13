@@ -10,7 +10,7 @@
       "CONTRIBUTING.md": "Contribution guidelines"
     },
     "scripts/": {
-      "Entra-ID-Groups-Assessment.ps1": "Main assessment script",
+      "Get-GroupsAssessment.ps1": "Main assessment script",
       "Get-GroupActivityAssessment.ps1": "Activity analysis script",
       "Get-PrivilegedGroupsAssessment.ps1": "Privileged groups script",
       "Generate-GroupsHTMLReport.ps1": "HTML report generator",
