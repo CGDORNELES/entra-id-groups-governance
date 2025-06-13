@@ -1,0 +1,97 @@
+name: PR Merge Actions
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+
+jobs:
+  on-merge:
+    name: Post-Merge Actions
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update documentation
+        run: |
+          echo "Updating documentation with latest changes..."
+          # Add any documentation generation steps here
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Extract changes from PR body or commits
+          PR_BODY="${{ github.event.pull_request.body }}"
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          echo "### Changes in PR #${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          echo "$PR_BODY" | grep -E "^- " || echo "- ${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update CHANGELOG
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+            const date = new Date().toISOString().split('T')[0];
+            const newEntry = `## [Unreleased]\n\n### Added\n${{ steps.release_notes.outputs.release_notes }}\n\n`;
+            const updatedChangelog = changelog.replace('## [Unreleased]', newEntry);
+            fs.writeFileSync('CHANGELOG.md', updatedChangelog);
+
+      - name: Create version tag (if needed)
+        if: contains(github.event.pull_request.labels.*.name, 'release')
+        run: |
+          # Extract version from PR title or label
+          VERSION=$(echo "${{ github.event.pull_request.title }}" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+          if [ ! -z "$VERSION" ]; then
+            git tag $VERSION
+            git push origin $VERSION
+          fi
+
+      - name: Notify team
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Post merge notification
+            const issueComment = `
+            ## 🎉 PR Merged Successfully!
+            
+            **Merged by:** @${{ github.event.pull_request.merged_by.login }}
+            **Merge time:** ${{ github.event.pull_request.merged_at }}
+            
+            ### Next Steps:
+            - [ ] Documentation has been updated
+            - [ ] CHANGELOG has been updated
+            ${github.event.pull_request.labels.some(l => l.name === 'release') ? '- [ ] Version tag created' : ''}
+            
+            Thank you @${{ github.event.pull_request.user.login }} for your contribution! 🚀
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueComment
+            });
+
+  cleanup:
+    name: PR Cleanup
+    if: github.event.pull_request.merged == false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Comment on closed PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '👋 This PR was closed without merging. Thank you for your contribution!'
+            });

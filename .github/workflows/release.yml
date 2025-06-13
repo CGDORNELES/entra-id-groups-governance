@@ -1,0 +1,60 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Package scripts
+        shell: pwsh
+        run: |
+          # Create release package
+          $version = "${{ github.ref_name }}"
+          $packageName = "EntraID-Groups-Governance-$version"
+          
+          New-Item -ItemType Directory -Path $packageName -Force
+          Copy-Item -Path ./scripts/* -Destination $packageName/ -Recurse
+          Copy-Item -Path ./README.md -Destination $packageName/
+          Copy-Item -Path ./LICENSE -Destination $packageName/
+          Copy-Item -Path ./CHANGELOG.md -Destination $packageName/
+          
+          # Create documentation PDF (optional)
+          # Convert-MarkdownToPDF -Path ./README.md -OutPath "$packageName/Documentation.pdf"
+          
+          # Compress package
+          Compress-Archive -Path $packageName -DestinationPath "$packageName.zip"
+
+      - name: Generate release notes
+        id: release_notes
+        shell: pwsh
+        run: |
+          $changelog = Get-Content -Path ./CHANGELOG.md -Raw
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $pattern = "## \[$version\].*?(?=## \[|$)"
+          $releaseNotes = [regex]::Match($changelog, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline).Value
+          
+          if (-not $releaseNotes) {
+            $releaseNotes = "Release $version"
+          }
+          
+          # GitHub Actions output
+          "release_notes<<EOF" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          $releaseNotes | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          "EOF" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: EntraID-Groups-Governance-*.zip
+          body: ${{ steps.release_notes.outputs.release_notes }}
+          draft: false
+          prerelease: false
