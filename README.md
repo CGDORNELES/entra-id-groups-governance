@@ -11,7 +11,7 @@ This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID (
 ## Table of Contents
 
 1. [Requirements](#requirements)
-2. [Usage](#Usage)
+2. [Usage](#usage)
 3. [Features](#Features)
 4. [Support](#Support)
 5. [License](#License)
@@ -31,6 +31,7 @@ This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID (
 - **User.Read.All** - Read user information
 
 ### Required PowerShell Modules
+
 ```powershell
 Microsoft.Graph.Authentication
 Microsoft.Graph.Groups
@@ -38,6 +39,7 @@ Microsoft.Graph.Reports
 Microsoft.Graph.Users
 Microsoft.Graph.DirectoryObjects
 ```
+
 ## Usage
 
 ### Quick Start - Complete Assessment
@@ -49,6 +51,7 @@ cd path\to\entra-id-groups-governance\scripts
 # Run the complete assessment
 .\Run-CompleteGroupAssessment.ps1
 ```
+
 This will:
 
 1. Connect to Microsoft Graph (browser authentication)
