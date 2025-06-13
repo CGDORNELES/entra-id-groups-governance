@@ -4,7 +4,7 @@
 .DESCRIPTION
     This script runs all assessment scripts in sequence and generates a comprehensive HTML report
 .AUTHOR
-    Created for: cdornele
+    Clairo Dorneles (clairo@clairodorneles.cloud)
 .DATE
     2025-01-13
 #>

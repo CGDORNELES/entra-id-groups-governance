@@ -4,7 +4,7 @@
 .DESCRIPTION
     This script identifies groups with administrative privileges and analyzes their membership
 .AUTHOR
-    Created for: cdornele
+    Clairo Dorneles (clairo@clairodorneles.cloud)
 .DATE
     2025-06-13
 #>
