@@ -1,0 +1,174 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+jobs:
+  validate-powershell:
+    name: Validate PowerShell Scripts
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path ./scripts -Recurse -Severity Error,Warning
+          if ($results) {
+            $results | Format-Table -AutoSize
+            throw "PSScriptAnalyzer found issues"
+          }
+
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $scripts = Get-ChildItem -Path ./scripts -Filter *.ps1 -Recurse
+          $errors = @()
+          foreach ($script in $scripts) {
+            $errors += [System.Management.Automation.PSParser]::Tokenize((Get-Content -Path $script.FullName -Raw), [ref]$null) | Where-Object { $_.Type -eq 'ParseError' }
+          }
+          if ($errors.Count -gt 0) {
+            $errors | Format-Table -AutoSize
+            throw "Syntax errors found"
+          }
+
+  test-scripts:
+    name: Test PowerShell Scripts
+    runs-on: windows-latest
+    needs: validate-powershell
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install required modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Microsoft.Graph -Force -Scope CurrentUser
+          Install-Module -Name Pester -Force -Scope CurrentUser
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          if (Test-Path ./tests/Test-Scripts.ps1) {
+            ./tests/Test-Scripts.ps1
+          }
+
+      - name: Validate script help
+        shell: pwsh
+        run: |
+          $scripts = Get-ChildItem -Path ./scripts -Filter *.ps1 -Recurse
+          foreach ($script in $scripts) {
+            $help = Get-Help $script.FullName -ErrorAction SilentlyContinue
+            if (-not $help.Synopsis) {
+              Write-Warning "Missing synopsis in $($script.Name)"
+            }
+          }
+
+  check-documentation:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            **/*.md
+            !node_modules
+
+      - name: Check for required files
+        run: |
+          required_files=("README.md" "LICENSE" "CHANGELOG.md" "CONTRIBUTING.md")
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Required file missing: $file"
+              exit 1
+            fi
+          done
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy security scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for sensitive data
+        run: |
+          # Check for potential secrets or sensitive data
+          if grep -r -E "(password|secret|key|token|credential)" scripts/ --include="*.ps1" | grep -v -E "(Get-Credential|SecureString|PasswordParameter)"; then
+            echo "Potential sensitive data found in scripts"
+            exit 1
+          fi
+
+  pr-comment:
+    name: PR Status Comment
+    runs-on: ubuntu-latest
+    needs: [validate-powershell, test-scripts, check-documentation, security-scan]
+    if: always()
+
+    steps:
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobResults = {
+              'validate-powershell': '${{ needs.validate-powershell.result }}',
+              'test-scripts': '${{ needs.test-scripts.result }}',
+              'check-documentation': '${{ needs.check-documentation.result }}',
+              'security-scan': '${{ needs.security-scan.result }}'
+            };
+            
+            let comment = '## 🤖 PR Validation Results\n\n';
+            comment += '| Check | Status |\n';
+            comment += '|-------|--------|\n';
+            
+            for (const [job, result] of Object.entries(jobResults)) {
+              const emoji = result === 'success' ? '✅' : '❌';
+              const status = result === 'success' ? 'Passed' : 'Failed';
+              comment += `| ${job.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} | ${emoji} ${status} |\n`;
+            }
+            
+            comment += '\n';
+            comment += '**Submitted by:** @${{ github.actor }}\n';
+            comment += '**Date:** ${{ github.event.pull_request.updated_at }}\n';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
