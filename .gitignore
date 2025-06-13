@@ -1,0 +1,47 @@
+# PowerShell Scripts
+*.ps1.bak
+*.ps1.tmp
+
+# Assessment Output Folders
+EntraID_Groups_Assessment_*/
+EntraID_GroupActivity_*/
+EntraID_PrivilegedGroups_*/
+
+# Report Files
+*.html
+!sample-report.html
+
+# CSV Output Files
+*.csv
+!sample-data/*.csv
+
+# Logs
+*.log
+*.txt
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Credentials and Secrets
+*.pfx
+*.cer
+*.key
+secrets.json
+config.local.json
+
+# Temporary files
+temp/
+tmp/

@@ -1,0 +1,33 @@
+{
+  "name": "entra-id-groups-governance",
+  "description": "Comprehensive PowerShell toolkit for Entra ID (Azure AD) groups assessment, governance, and activity analysis",
+  "structure": {
+    "root": {
+      "README.md": "Main documentation",
+      "LICENSE": "MIT License",
+      ".gitignore": "Git ignore file",
+      "CHANGELOG.md": "Version history",
+      "CONTRIBUTING.md": "Contribution guidelines"
+    },
+    "scripts/": {
+      "Entra-ID-Groups-Assessment.ps1": "Main assessment script",
+      "Get-GroupActivityAssessment.ps1": "Activity analysis script",
+      "Get-PrivilegedGroupsAssessment.ps1": "Privileged groups script",
+      "Generate-GroupsHTMLReport.ps1": "HTML report generator",
+      "Run-CompleteGroupAssessment.ps1": "Orchestration script"
+    },
+    "docs/": {
+      "INSTALLATION.md": "Detailed installation guide",
+      "USER-GUIDE.md": "User documentation",
+      "API-REFERENCE.md": "Script parameters reference",
+      "TROUBLESHOOTING.md": "Common issues and solutions"
+    },
+    "samples/": {
+      "sample-report.html": "Example HTML report",
+      "sample-data/": "Example CSV outputs"
+    },
+    "tests/": {
+      "Test-Scripts.ps1": "Basic script tests"
+    }
+  }
+}
