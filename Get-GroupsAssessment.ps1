@@ -10,7 +10,7 @@
     - Security and governance review
     - Best practices compliance check
 .AUTHOR
-    Created for: cdornele
+    Created for: Clairo Dorneles (clairo@clairodorneles.cloud)
 .DATE
     2025-06-13
 #>
