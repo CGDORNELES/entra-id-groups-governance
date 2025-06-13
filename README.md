@@ -3,7 +3,20 @@
 
 ## Overview
 
-This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID (Azure AD) groups, including activity analysis, governance evaluation, and improvement recommendations.
+This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID (Azure AD) groups, 
+EntraID_Groups_Assessment_YYYYMMDD_HHMMSS/
+├── AllGroups_Detailed.csv          # Complete inventory
+├── AssessmentSummary.csv           # Statistics
+├── EmptyGroups.csv                 # Groups with no members
+├── OrphanedGroups.csv              # Groups with no owners
+├── GroupsWithGuests.csv            # External access
+└── LargeGroups.csv                 # 1000+ members
+
+EntraID_GroupActivity_YYYYMMDD_HHMMSS/
+├── M365Groups_ActivityAnalysis.csv
+├── SecurityGroups_ActivityAnalysis.csv
+├── AllGroups_ActivitySummary.csv
+└── Groups_RequiringAction.csvincluding activity analysis, governance evaluation, and improvement recommendations.
 
 **Author:** Developed for Clairo Dorneles
 **Date:** January 13, 2025  
