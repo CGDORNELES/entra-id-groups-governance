@@ -130,8 +130,11 @@ jobs:
 
       - name: Check for sensitive data
         run: |
-          # Check for potential secrets or sensitive data
-          if grep -r -E "(password|secret|key|token|credential)" scripts/ --include="*.ps1" | grep -v -E "(Get-Credential|SecureString|PasswordParameter)"; then
+          # Check for potential secrets or sensitive data, but ignore known-safe lines in Generate-GroupsHTMLReport.ps1
+          if grep -r -E "(password|secret|key|token|credential)" scripts/ --include="*.ps1" \
+            | grep -v -E "scripts/Generate-GroupsHTMLReport\.ps1:.*\$keyFindings" \
+            | grep -v -E "scripts/Generate-GroupsHTMLReport\.ps1:.*KEY_FINDINGS" \
+            | grep -v -E "(Get-Credential|SecureString|PasswordParameter)"; then
             echo "Potential sensitive data found in scripts"
             exit 0
           fi
