@@ -1,3 +1,4 @@
+
 # Entra ID Groups Assessment Tools
 
 ## Overview
@@ -19,11 +20,13 @@ This comprehensive PowerShell toolkit provides in-depth assessment of Entra ID (
 ## Requirements
 
 ### System Prerequisites
+
 - Windows PowerShell 5.1 or PowerShell 7+
 - Internet connection
 - Entra ID administrative account
 
 ### Required Permissions
+
 - **Group.Read.All** - Read all groups
 - **Directory.Read.All** - Read directory data
 - **Reports.Read.All** - Read activity reports
