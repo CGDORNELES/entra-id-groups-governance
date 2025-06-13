@@ -34,14 +34,24 @@ jobs:
 
       - name: Update CHANGELOG
         uses: actions/github-script@v7
+        if: github.event.pull_request && github.event.pull_request.merged == true
         with:
           script: |
             const fs = require('fs');
-            const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+            const path = require('path');
+            
+            // Check if CHANGELOG.md exists
+            const changelogPath = path.join(process.env.GITHUB_WORKSPACE, 'CHANGELOG.md');
+            if (!fs.existsSync(changelogPath)) {
+              console.log('CHANGELOG.md not found, skipping update');
+              return;
+            }
+            
+            const changelog = fs.readFileSync(changelogPath, 'utf8');
             const date = new Date().toISOString().split('T')[0];
             const newEntry = `## [Unreleased]\n\n### Added\n${{ steps.release_notes.outputs.release_notes }}\n\n`;
             const updatedChangelog = changelog.replace('## [Unreleased]', newEntry);
-            fs.writeFileSync('CHANGELOG.md', updatedChangelog);
+            fs.writeFileSync(changelogPath, updatedChangelog);
 
       - name: Create version tag (if needed)
         if: contains(github.event.pull_request.labels.*.name, 'release')
@@ -55,33 +65,45 @@ jobs:
 
       - name: Notify team
         uses: actions/github-script@v7
+        if: github.event.pull_request
         with:
           script: |
+            // Safely access pull request data
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log('No pull request data available');
+              return;
+            }
+            
             // Post merge notification
             const issueComment = `
             ## 🎉 PR Merged Successfully!
             
-            **Merged by:** @${{ github.event.pull_request.merged_by.login }}
-            **Merge time:** ${{ github.event.pull_request.merged_at }}
+            **Merged by:** @${pr.merged_by ? pr.merged_by.login : 'unknown'}
+            **Merge time:** ${pr.merged_at || new Date().toISOString()}
             
             ### Next Steps:
             - [ ] Documentation has been updated
             - [ ] CHANGELOG has been updated
-            ${github.event.pull_request.labels.some(l => l.name === 'release') ? '- [ ] Version tag created' : ''}
+            ${pr.labels && pr.labels.some(l => l.name === 'release') ? '- [ ] Version tag created' : ''}
             
-            Thank you @${{ github.event.pull_request.user.login }} for your contribution! 🚀
+            Thank you @${pr.user ? pr.user.login : 'contributor'} for your contribution! 🚀
             `;
             
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: issueComment
-            });
+            try {
+              await github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: issueComment
+              });
+            } catch (error) {
+              console.log(`Failed to post comment: ${error.message}`);
+            }
 
   cleanup:
     name: PR Cleanup
-    if: github.event.pull_request.merged == false
+    if: github.event.pull_request && github.event.pull_request.merged == false
     runs-on: ubuntu-latest
 
     steps:
@@ -89,9 +111,20 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '👋 This PR was closed without merging. Thank you for your contribution!'
-            });
+            // Safely access pull request data
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log('No pull request data available');
+              return;
+            }
+            
+            try {
+              await github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '👋 This PR was closed without merging. Thank you for your contribution!'
+              });
+            } catch (error) {
+              console.log(`Failed to post comment: ${error.message}`);
+            }
