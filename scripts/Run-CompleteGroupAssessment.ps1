@@ -38,7 +38,7 @@ $privilegedFolder = ""
 if (!$SkipBasicAssessment) {
     Write-Host "Step 1: Running basic group assessment..." -ForegroundColor Green
     if (Test-Path ".\Get-GroupsAssessment.ps1") {
-        & .\Entra-ID-Groups-Assessment.ps1
+        & .\Get-GroupsAssessment.ps1
         # Get the most recent assessment folder
         $assessmentFolder = Get-ChildItem -Directory -Filter "EntraID_Groups_Assessment_*" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Select-Object -ExpandProperty FullName
         Write-Host "Basic assessment completed. Output: $assessmentFolder" -ForegroundColor Green
